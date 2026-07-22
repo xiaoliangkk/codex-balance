@@ -1,0 +1,23 @@
+{
+  "name": "codex-balance",
+  "version": "0.1.0+codex.20260722004150",
+  "description": "\u5728 Codex \u5ba2\u6237\u7aef\u5de6\u4e0b\u89d2\u59d3\u540d\u65c1\u663e\u793a\u6bcf\u5468\u5269\u4f59\u989d\u5ea6\u548c\u91cd\u7f6e\u65f6\u95f4\u3002",
+  "author": {
+    "name": "Xiao Liang"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex \u4f59\u989d",
+    "shortDescription": "\u5728\u59d3\u540d\u65c1\u663e\u793a\u6bcf\u5468\u5269\u4f59\u989d\u5ea6",
+    "longDescription": "\u4e00\u4e2a\u672c\u5730\u3001\u53ea\u8bfb\u7684 Codex \u7528\u91cf\u6d6e\u5c42\uff1a\u5728\u5de6\u4e0b\u89d2\u59d3\u540d\u65c1\u663e\u793a\u6bcf\u5468\u5269\u4f59\u767e\u5206\u6bd4\uff0c\u5c55\u5f00\u540e\u663e\u793a\u5df2\u7528\u767e\u5206\u6bd4\u548c\u91cd\u7f6e\u65f6\u95f4\u3002",
+    "developerName": "Xiao Liang",
+    "category": "Productivity",
+    "capabilities": [
+      "Read"
+    ],
+    "defaultPrompt": "\u68c0\u67e5 Codex \u4f59\u989d\u6d6e\u5c42\u662f\u5426\u6b63\u5e38\u8fd0\u884c\u3002",
+    "brandColor": "#9D8CFF",
+    "composerIcon": "./assets/icon.svg",
+    "logo": "./assets/logo.svg"
+  }
+}
