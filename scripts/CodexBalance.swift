@@ -44,6 +44,17 @@ extension Comparable {
     }
 }
 
+func remainingDuration(until reset: Date?, now: Date = Date()) -> String {
+    guard let reset else { return "–" }
+    let totalMinutes = max(0, Int(reset.timeIntervalSince(now) / 60))
+    let days = totalMinutes / 1_440
+    let hours = (totalMinutes % 1_440) / 60
+    let minutes = totalMinutes % 60
+    if days > 0 { return "\(days)d\(hours)h\(minutes)m" }
+    if hours > 0 { return "\(hours)h\(minutes)m" }
+    return "\(minutes)m"
+}
+
 enum UsageReader {
     private static let cocoaEpochOffset = 978_307_200.0
 
@@ -167,8 +178,8 @@ final class BalanceView: NSView {
     private enum Layout {
         static let compactHorizontalPadding: CGFloat = 4
         static let compactFontSize: CGFloat = 10
-        static let compactBarY: CGFloat = 59
-        static let compactBarWidth: CGFloat = 36
+        static let compactBarY: CGFloat = 60
+        static let compactBarWidth: CGFloat = 40
     }
 
     var snapshot: UsageSnapshot? { didSet { needsDisplay = true } }
@@ -202,20 +213,20 @@ final class BalanceView: NSView {
     }
 
     private func drawCompact() {
-        drawCompactMetric(label: "5h", metric: snapshot?.session, labelY: 0, valueY: 12)
-        drawCompactMetric(label: "7d", metric: snapshot?.weekly, labelY: 29, valueY: 41)
+        drawCompactMetric(label: "5h", metric: snapshot?.session, rowY: 1, countdownY: 14)
+        drawCompactMetric(label: "7d", metric: snapshot?.weekly, rowY: 31, countdownY: 44)
         drawContextProgress(
             percent: snapshot?.context?.usedPercent,
-            rect: NSRect(x: Layout.compactHorizontalPadding, y: Layout.compactBarY, width: Layout.compactBarWidth, height: 6)
+            rect: NSRect(x: Layout.compactHorizontalPadding, y: Layout.compactBarY, width: Layout.compactBarWidth, height: 5)
         )
         let contextText = snapshot?.context.map { "\($0.usedPercent)%" } ?? "–"
-        drawCenteredText(contextText, y: 68, size: 10, weight: .semibold, color: contextColor(percent: snapshot?.context?.usedPercent))
+        drawCenteredText(contextText, y: 68, size: 9, weight: .semibold, color: contextColor(percent: snapshot?.context?.usedPercent))
     }
 
-    private func drawCompactMetric(label: String, metric: UsageMetric?, labelY: CGFloat, valueY: CGFloat) {
+    private func drawCompactMetric(label: String, metric: UsageMetric?, rowY: CGFloat, countdownY: CGFloat) {
         let remaining = metric.map { "\($0.remainingPercent)%" } ?? "–"
-        drawCenteredText(label, y: labelY, size: 9, weight: .regular, color: secondaryColor)
-        drawCenteredText(remaining, y: valueY, size: Layout.compactFontSize, weight: .medium, color: primaryColor)
+        drawCenteredMetric(label: label, value: remaining, y: rowY)
+        drawCenteredText(remainingDuration(until: metric?.resetsAt), y: countdownY, size: 8, weight: .regular, color: secondaryColor)
     }
 
     private func drawExpanded() {
@@ -290,6 +301,20 @@ final class BalanceView: NSView {
         text.draw(at: NSPoint(x: (bounds.width - width) / 2, y: y), withAttributes: attributes)
     }
 
+    private func drawCenteredMetric(label: String, value: String, y: CGFloat) {
+        let text = NSMutableAttributedString(string: label, attributes: [
+            .font: NSFont.monospacedDigitSystemFont(ofSize: 9, weight: .regular),
+            .foregroundColor: secondaryColor
+        ])
+        text.append(NSAttributedString(string: " "))
+        text.append(NSAttributedString(string: value, attributes: [
+            .font: NSFont.monospacedDigitSystemFont(ofSize: Layout.compactFontSize, weight: .medium),
+            .foregroundColor: primaryColor
+        ]))
+        let width = ceil(text.size().width)
+        text.draw(at: NSPoint(x: (bounds.width - width) / 2, y: y))
+    }
+
     private func drawRightAlignedText(
         _ text: String,
         rightInset: CGFloat,
@@ -340,7 +365,7 @@ final class BalanceView: NSView {
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private let compactSize = NSSize(width: 44, height: 84)
+    private let compactSize = NSSize(width: 48, height: 84)
     private let expandedSize = NSSize(width: 318, height: 221)
     private let panel: NSPanel
     private let balanceView: BalanceView
@@ -402,7 +427,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let origin = balanceView.expanded
             ? NSPoint(x: codexFrame.minX + 16, y: codexFrame.minY + 51)
-            : NSPoint(x: codexFrame.minX + 4, y: codexFrame.minY + 128)
+            : NSPoint(x: codexFrame.minX + 2, y: codexFrame.minY + 128)
         panel.setFrameOrigin(origin)
         panel.orderFrontRegardless()
     }
@@ -446,7 +471,31 @@ func printCurrentUsage() {
     print(String(data: data, encoding: .utf8)!)
 }
 
-if CommandLine.arguments.contains("--print") {
+func testCountdownFormatting() {
+    let now = Date(timeIntervalSince1970: 1_000_000)
+    let cases: [(TimeInterval, String)] = [
+        (4 * 3_600 + 30 * 60, "4h30m"),
+        (5 * 86_400 + 6 * 3_600 + 6 * 60, "5d6h6m"),
+        (42 * 60, "42m"),
+        (-60, "0m")
+    ]
+    for (offset, expected) in cases {
+        let actual = remainingDuration(until: now.addingTimeInterval(offset), now: now)
+        guard actual == expected else {
+            fputs("expected \(expected), got \(actual)\n", stderr)
+            exit(1)
+        }
+    }
+    guard remainingDuration(until: nil, now: now) == "–" else {
+        fputs("nil reset must render as dash\n", stderr)
+        exit(1)
+    }
+    print("countdown formatting OK: \(cases.count + 1) cases")
+}
+
+if CommandLine.arguments.contains("--test-countdown") {
+    testCountdownFormatting()
+} else if CommandLine.arguments.contains("--print") {
     printCurrentUsage()
 } else {
     let app = NSApplication.shared

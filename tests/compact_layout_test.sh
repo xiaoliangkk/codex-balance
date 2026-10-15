@@ -17,10 +17,12 @@ let containerWidth = Double(CommandLine.arguments[1])!
 let fontSize = 10.0
 let labelFont = NSFont.systemFont(ofSize: fontSize, weight: .regular)
 let valueFont = NSFont.systemFont(ofSize: fontSize, weight: .medium)
+let countdownFont = NSFont.monospacedDigitSystemFont(ofSize: 8, weight: .regular)
 func width(_ text: String, font: NSFont) -> Double {
     ceil((text as NSString).size(withAttributes: [.font: font]).width)
 }
-let required = 4 + width("100%", font: valueFont) + 4
+let inlineMetric = width("5h", font: labelFont) + width(" ", font: labelFont) + width("100%", font: valueFont)
+let required = 2 + max(inlineMetric, width("6d23h59m", font: countdownFont)) + 2
 guard required <= containerWidth else {
     fputs("worst-case compact text requires \(required)px, container has \(containerWidth)px\n", stderr)
     exit(1)
