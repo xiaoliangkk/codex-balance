@@ -1,6 +1,6 @@
 ---
 name: codex-balance
-description: 安装、启动、停止或诊断 Codex 客户端左下角姓名旁的每周余额浮层。用户提到 Codex 余额、额度浮层、左下角余额或 codex-balance 时使用。
+description: 安装、启动、停止或诊断 Codex 客户端左下角姓名旁的会话及每周余额浮层。用户提到 Codex 余额、额度浮层、左下角余额或 codex-balance 时使用。
 ---
 
 # Codex Balance
@@ -20,7 +20,7 @@ description: 安装、启动、停止或诊断 Codex 客户端左下角姓名旁
 - 安装或更新后必须执行 `status.sh`，确认 LaunchAgent、进程和实时额度三项均正常。
 - 诊断时先运行 `status.sh`；不要清空 Codex 会话、CodexBar 数据或登录状态。
 - `uninstall.sh` 只卸载浮层及其 LaunchAgent，不移除 Codex 插件本体。
-- 浮层仅在 Codex 位于前台时显示；紧凑状态无底色、描边和阴影，按 `weekly 1%` 格式融入侧栏。单击可展开详情，再次单击收起。
+- 浮层仅在 Codex 位于前台时显示；紧凑状态无底色、描边和阴影，在最左侧窄栏纵向显示 `5h`、`7d` 和当前对话的上下文进度条。单击可展开额度、上下文 Token 数和重置时间，再次单击收起。
 
 ## 验收
 
@@ -30,4 +30,4 @@ description: 安装、启动、停止或诊断 Codex 客户端左下角姓名旁
 "$HOME/Library/Application Support/Codex Balance/Codex Balance.app/Contents/MacOS/Codex Balance" --print
 ```
 
-预期输出包含 `weekly`、`usedPercent`、`remainingPercent` 和 `resetsAt`。若当前没有额度数据，先在 Codex 中完成一次对话，再复查。
+预期输出包含 `session`、`weekly` 和 `context`；`context` 包含 `usedTokens`、`windowTokens` 和 `usedPercent`。若当前没有数据，先在 Codex 中完成一次对话，再复查。
